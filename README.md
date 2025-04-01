@@ -9,9 +9,8 @@ This repository contains various independent DevOps projects focusing on infrast
 | /docker/  | Containerisation projects with Docker |
 | /python/  | DevOps automation scripts in Python |
 | /ansible/  | Configuration management with Ansible |
-| /Kubernetes/  | Kubernetes deployment manifests |
+| /kubernetes/  | Kubernetes deployment manifests |
 | /scripting-tools/ | Shell scripts for automation |
-| /scripts/  | Shell scripts for automation |
 
 ### Purpose
 This repository aims to provide:
