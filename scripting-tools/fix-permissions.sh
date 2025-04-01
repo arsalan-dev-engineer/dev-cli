@@ -7,7 +7,7 @@ YELLOW="\033[0;33m"
 RESET="\033[0m"
 
 # Define the directories to check with relative paths from the root
-directories=("../docker" "../python" "../terraform" "../scripting-tools")
+directories=("../devops/ansible" "../devops/docker" "../devops/kubernetes" "../devops/python" "../devops/terraform" "../scripting-tools")
 
 # Checking files section (grouped together with only one space after each check)
 for dir in "${directories[@]}"; do

@@ -1,0 +1,31 @@
+# ------------------------------------------------------------------------
+# This is the requirements.txt file for the dev-cli project.
+# It lists all the Python dependencies required to run the dev-cli command-line tool.
+# There are two ways to install these dependencies:
+# 
+# Option 1: Run the following command to install all dependencies from this file:
+#   pip install -r requirements.txt
+#
+# Option 2: Navigate to the 'scripting-tools' directory and run the setup.sh script:
+#   cd scripting-tools
+#   ./setup.sh
+#
+# The dependencies listed in this file are:
+# ------------------------------------------------------------------------
+
+click
+pytube
+requests
+keyring
+yt_dlp
+fastapi
+pydantic
+typing
+uvicorn
+rich
+PyPDF2
+pyttsx3
+psutil
+opencv-python
+setuptools
+boto3
