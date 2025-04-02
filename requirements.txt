@@ -29,3 +29,4 @@ psutil
 opencv-python
 setuptools
 boto3
+docker
