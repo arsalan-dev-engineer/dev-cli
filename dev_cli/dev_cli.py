@@ -13,7 +13,7 @@ parentdir = currentdir.parent
 sys.path.insert(0, str(parentdir))
 
 # import modules from commands.personal directory
-
+from commands import docker_cleanup
 
 # define main command group for the CLI Tool
 @click.group(help="dev-cli tool: a command-line interface for various devops utilities.")
@@ -22,6 +22,8 @@ def cli():
      # function doesn't do anything.
      # is REQUIRED for defining the command group
     pass
+
+cli.add_command(docker_cleanup.docker_cleanup)
 
 # entry point of the script.
 # calls the cli tool if the script is executed.
