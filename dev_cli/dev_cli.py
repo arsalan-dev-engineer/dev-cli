@@ -5,27 +5,45 @@ import click
 import sys
 from pathlib import Path
 
-# get current script directory
+# =============== PATH SETUP
+
 currentdir = Path(__file__).resolve().parent
-# get parent directory
 parentdir = currentdir.parent
 # add parent directory to sys.path
 sys.path.insert(0, str(parentdir))
 
-# import modules from commands.personal directory
-from commands import docker_cleanup
+# =============== IMPORTING DOCKER MODULES
 
-# define main command group for the CLI Tool
+# import modules from commands.docker
+from commands.docker import cleanup
+
+# =============== CLI GROUP
+
+# define main command group for the cli tool
 @click.group(help="dev-cli tool: a command-line interface for various devops utilities.")
 def cli():
     """Main entry point for dev-cli Tool."""
-     # function doesn't do anything.
-     # is REQUIRED for defining the command group
+    # function doesn't do anything.
+    # is REQUIRED for defining the command group
     pass
 
-cli.add_command(docker_cleanup.docker_cleanup)
+# =============== DOCKER SUB-GROUP
 
-# entry point of the script.
+# define docker command group
+@click.group(help="Commands for automating docker operations.")
+def docker():
+    pass
+
+# add commands to docker group
+docker.add_command(cleanup.cleanup)
+
+# =============== ADD SUB-GROUPS TO MAIN CLI GROUP
+
+# add docker group to the main cli group
+cli.add_command(docker)
+
+# =============== SCRIPT ENTRYPOINT
+
 # calls the cli tool if the script is executed.
 if __name__ == "__main__":
     cli()

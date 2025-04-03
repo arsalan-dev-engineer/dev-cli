@@ -71,7 +71,7 @@ Example: 'dev-cli docker-cleanup a --dry-run'""")
 @click.option("--verbose", is_flag=True, help="Enable verbose output.")
 @click.option("--log-level", type=click.Choice(["DEBUG", "INFO", "WARNING", "ERROR"], case_sensitive=False),
               default="INFO", help="Set the logging level.")
-def docker_cleanup(verbose, log_level):
+def cleanup(verbose, log_level):
     log_level = getattr(logging, log_level.upper(), logging.INFO)
     logger.setLevel(log_level)
     if verbose:
@@ -180,13 +180,13 @@ def prune_all(dry_run, force):
 
 # =============== ADDING COMMANDS TO GROUPS
 
-docker_cleanup.add_command(prune_containers)
-docker_cleanup.add_command(prune_images)
-docker_cleanup.add_command(prune_volumes)
-docker_cleanup.add_command(prune_networks)
-docker_cleanup.add_command(prune_all)
+cleanup.add_command(prune_containers)
+cleanup.add_command(prune_images)
+cleanup.add_command(prune_volumes)
+cleanup.add_command(prune_networks)
+cleanup.add_command(prune_all)
 
 # =============== SCRIPT ENTRYPOINT
 
 if __name__ == "__main__":
-    docker_cleanup()
+    cleanup()
