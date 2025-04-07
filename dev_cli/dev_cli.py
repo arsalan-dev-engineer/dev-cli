@@ -17,6 +17,11 @@ sys.path.insert(0, str(parentdir))
 # import modules from commands.docker
 from commands.docker import cleanup
 
+# =============== IMPORTING AWS MODULES
+
+# import modules from commands.aws
+from commands.aws import s3
+
 # =============== CLI GROUP
 
 # define main command group for the cli tool
@@ -37,10 +42,21 @@ def docker():
 # add commands to docker group
 docker.add_command(cleanup.cleanup)
 
+# =============== AWS SUB-GROUP
+
+# define aws command group
+@click.group(help="Commands for automating aws operations.")
+def aws():
+    pass
+
+# add commands to docker group
+aws.add_command(s3.s3)
+
 # =============== ADD SUB-GROUPS TO MAIN CLI GROUP
 
-# add docker group to the main cli group
+# add sub-groups to the main cli group
 cli.add_command(docker)
+cli.add_command(aws)
 
 # =============== SCRIPT ENTRYPOINT
 

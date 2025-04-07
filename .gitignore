@@ -72,3 +72,5 @@ Pipfile.lock
 
 # Ignore content in resources/images/
 resources/images/*
+
+notes.txt
