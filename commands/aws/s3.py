@@ -17,6 +17,7 @@ Commands:
     ls             List objects within a specified S3 bucket.
     set-policy     Apply a bucket policy to a specific S3 bucket.
     get-policy     View the current policy of an S3 bucket.
+    del-policy  Delete a bucket policy from a specified S3 bucket.
 """
 
 import boto3.exceptions
@@ -25,6 +26,7 @@ import click
 import sys
 from pathlib import Path
 import boto3
+import botocore
 from botocore.exceptions import ClientError
 from rich.logging import RichHandler
 import logging
@@ -87,22 +89,49 @@ def create(bucket_name, region):
 
 # =============== DELETE S3 BUCKET
 
-# INCOMPLETE ==========
+
 @click.command(help="Delete an existing S3 bucket.")
-def delete():
-    pass
+@click.option("-bn", "--bucket-name", required=True, help="The name of the bucket to delete.")
+@click.option("-r", "--region", required=True, help="The AWS region where the bucket will be deleted from (e.g., 'eu-west-2').")
+def delete(bucket_name, region):
+    # create an S3 client in the specified region
+    s3 = boto3.client('s3', region_name=region)
+    try:
+        # delete S3 bucket
+        s3.delete_bucket(Bucket=bucket_name)
+        logger.info(
+            f"Bucket '{bucket_name}' successfully deleted from region '{region}'")
+    # hand aws client-side errors
+    except botocore.exceptions.ClientError as e:
+        error_code = e.response['Error']['Code']
+        error_message = e.response['Error'].get(
+            "Message", "No error message provided.")
+        logger.error(f"AWS ClientError [{error_code}]: {error_message}")
+
+    # handle boto3 related errors
+    except botocore.exceptions.BotoCoreError as e:
+        logger.error(f"BotoCoreError: {e}")
+    # handle any other unexpected exceptions
+    except Exception as e:
+        logger.error(f"Unexpected error: {e}")
 
 # INCOMPLETE ==========
+
+
 @click.command(help="Upload a file or directory to an S3 bucket.")
 def upload():
     pass
 
 # INCOMPLETE ==========
+
+
 @click.command(help="Download a file or folder from an S3 bucket.")
 def download():
     pass
 
 # INCOMPLETE ==========
+
+
 @click.command(help="Sync a local directory with an S3 bucket.")
 def sync():
     pass
@@ -141,13 +170,42 @@ def buckets():
             '%Y-%m-%d %H:%M:%S') if created else 'Unknown date'
         logger.info(f"\t{idx}: {name}\n\t   └─ Created on: {created_str}")
 
+# =============== LIST OBJECTS IN S3 BUCKET
 
-# INCOMPLETE ==========
+
 @click.command(help="List objects inside a specific S3 bucket.")
-def ls():
-    pass
+@click.option("-bn", "--bucket-name", required=True, help="Name of the bucket to list objects from.")
+@click.option("-r", "--region", required=True, help="AWS region where the bucket is located.")
+def ls(bucket_name, region):
+    # initialise the S3 client
+    s3 = boto3.client('s3', region_name=region)
+    try:
+        # attempt to list objects inside that specified bucket
+        response = s3.list_buckets_v2(Bucket=bucket_name)
+        if 'Contents' not in response:
+            logger.info(f"No objects found in bucket '{bucket_name}'.")
+            return
+
+        logger.info(f"Objects in bucket '{bucket_name}':")
+        for obj in response['Contents']:
+            key = obj['Key']
+            size = obj['Size']
+            last_modified = obj['LastModified'].strftime('%Y-%m-%d %H:%M:%S')
+            logger.info(
+                f"  ├─ {key} | {size} bytes | Last modified: {last_modified}")
+
+    # handle specified aws client-side errors
+    except botocore.exceptions.ClientError as E:
+        error_code = e.response['Error']['Code']
+        logger.error(
+            f"AWS ClientError [{error_code}]: {e.response['Error'].get('Message', '')}")
+    # handle any other unexpected errors
+    except Exception as e:
+        logger.error(f"Unexpected error: {e}")
 
 # INCOMPLETE ==========
+
+
 @click.command(help="Apply a policy to a specified S3 bucket.")
 def set_policy():
     pass
@@ -175,6 +233,13 @@ def get_policy(bucket_name):
         # only return on exception
         return
 
+# =============== DELETE S3 BUCKET POLICY
+
+
+@click.command(help="Delete a policy from a specified S3 bucket.")
+def del_policy():
+    pass
+
 # =============== ADDING COMMANDS TO GROUPS
 
 
@@ -193,6 +258,7 @@ s3.add_command(sync)
 # policy management
 s3.add_command(set_policy)
 s3.add_command(get_policy)
+s3.add_command(del_policy)
 
 # =============== SCRIPT ENTRYPOINT
 
