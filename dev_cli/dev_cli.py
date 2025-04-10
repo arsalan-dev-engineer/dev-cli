@@ -7,6 +7,7 @@ from commands.aws import s3
 import click
 import sys
 from pathlib import Path
+from commands.toolkit import cache
 
 # =============== PATH SETUP
 
@@ -28,6 +29,8 @@ def cli():
 # =============== SUB-GROUPS
 
 # define aws command group
+
+
 @click.group(help="Commands for automating aws operations.")
 def aws():
     pass
@@ -46,11 +49,10 @@ def toolkit():
 
 # aws
 aws.add_command(s3.s3)
-
 # docker
 docker.add_command(cleanup.cleanup)
-
 # toolkit
+toolkit.add_command(cache.cache)
 
 # =============== ADD SUB-GROUPS TO MAIN CLI GROUP
 
