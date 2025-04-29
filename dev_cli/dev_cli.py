@@ -4,6 +4,7 @@
 
 from commands.docker import cleanup
 from commands.aws import s3
+from commands.aws import ec2
 import click
 import sys
 from pathlib import Path
@@ -29,8 +30,6 @@ def cli():
 # =============== SUB-GROUPS
 
 # define aws command group
-
-
 @click.group(help="Commands for automating aws operations.")
 def aws():
     pass
@@ -49,6 +48,7 @@ def toolkit():
 
 # aws
 aws.add_command(s3.s3)
+aws.add_command(ec2.ec2)
 # docker
 docker.add_command(cleanup.cleanup)
 # toolkit
