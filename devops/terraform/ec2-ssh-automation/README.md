@@ -1,9 +1,7 @@
 
 # AWS VPC Setup with EC2 Instance
 
-This project provides an automated setup for creating an AWS Virtual Private Cloud (VPC) with a public EC2 instance, allowing SSH access via an Internet Gateway. The infrastructure is managed using Terraform.
-
-#### This project is developed and managed using WSL (Windows Subsystem for Linux) with an Ubuntu environment
+This project challenge is part of the learning path on [roadmap.sh](https://roadmap.sh/projects/ssh-remote-server-setup).
 
 ## Project Overview
 
@@ -24,7 +22,6 @@ This Terraform configuration defines the following AWS resources:
 - **aws_security_group**: Controls inbound and outbound traffic to/from the EC2 instance.
 - **aws_instance**: A public EC2 instance for SSH access.
 
-
 ## Prerequisites
 
 - Terraform installed onto your Linux device.
@@ -33,6 +30,7 @@ This Terraform configuration defines the following AWS resources:
 
 ## Setup Instructions
 
+#### This project is developed and managed using WSL (Windows Subsystem for Linux) with an Ubuntu environment
 1. Clone the repository:
    ```bash
    https://github.com/arsalan-dev-engineer/dev-cli/tree/main/devops/terraform/ec2-ssh-automation
@@ -42,7 +40,3 @@ This Terraform configuration defines the following AWS resources:
     ```bash
    cd dev-cli && cd devops && cd terraform && cd ec2-ssh-automation
     ```
-    
-## Learning Reference: Roadmap.sh
-
-This project is part of the learning path from **roadmap.sh**: https://roadmap.sh/projects/ssh-remote-server-setup
