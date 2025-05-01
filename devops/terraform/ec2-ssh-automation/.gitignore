@@ -1,0 +1,27 @@
+
+# Terraform files
+*.tfstate
+*.tfstate.*
+*.terraform/
+crash.log
+*.tfvars
+*.backup
+
+# Terraform plan output
+*.tfplan
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*~
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# AWS credentials (ensure your credentials are set via environment variables or AWS CLI)
+.aws/
+
+# Terraform lock files
+terraform.lock.hcl
