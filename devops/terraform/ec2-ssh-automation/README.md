@@ -42,7 +42,7 @@ This Terraform configuration defines the following AWS resources:
     ```bash
    cd dev-cli && cd devops && cd terraform && cd ec2-ssh-automation
     ```
+    
 ## Learning Reference: Roadmap.sh
 
-This project is part of the learning path from [roadmap.sh](https://roadmap.sh/projects/ssh-remote-server-setup).
-
+This project is part of the learning path from **roadmap.sh**: https://roadmap.sh/projects/ssh-remote-server-setup
