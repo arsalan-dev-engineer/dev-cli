@@ -35,7 +35,7 @@ This Terraform configuration defines the following AWS resources:
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/arsalan-dev-engineer/dev-cli
+   https://github.com/arsalan-dev-engineer/dev-cli/tree/main/devops/terraform/ec2-ssh-automation
    ```
 
 2. CD into the sub-directory:
