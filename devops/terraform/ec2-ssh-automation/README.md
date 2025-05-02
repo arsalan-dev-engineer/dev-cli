@@ -33,7 +33,7 @@ This Terraform configuration defines the following AWS resources:
 #### This project is developed and managed using WSL (Windows Subsystem for Linux) with an Ubuntu environment
 1. Clone the repository:
    ```bash
-   https://github.com/arsalan-dev-engineer/dev-cli/tree/main/devops/terraform/ec2-ssh-automation
+   git clone https://github.com/arsalan-dev-engineer/dev-cli
    ```
 
 2. CD into the sub-directory:
