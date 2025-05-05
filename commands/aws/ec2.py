@@ -31,6 +31,8 @@ Commands:
 import boto3.exceptions
 import boto3
 import click
+import json
+from collections import defaultdict
 import sys
 from pathlib import Path
 import botocore
@@ -64,7 +66,63 @@ def ec2(verbose, log_level):
     if verbose:
       logger.debug("Verbose mode enabled.")
 
-# =============== ADD COMMANDS TO EC2 GROUP
+# =============== CREATE COMMANDS
+# ===== LIST INSTANCES
+
+@click.command()
+@click.option("-r", "--region", required=True, help="AWS region where the ec2 is located.")
+def list_ec2(region):
+    # initialise the ec2 client
+    ec2 = boto3.client("ec2", region_name=region)
+    try:
+        response = ec2.describe_instances()
+    except botocore.exceptions.BotoCoreError as e:
+        logger.error(f"AWS Boto3 error: {e}")
+    except Exception as e:
+        logger.error(f"Unexpected error: {e}")    
+        return
+    
+    # if no instances, print the message below then return
+    if not response['Reservations']:
+        logger.info("No ec2 instances found in your AWS account")
+        return
+    
+    # create a dictionary to group instances by their state (e.g. running, stopped)
+    grouped = defaultdict(list)
+
+    # loop through all EC2 reservations
+    for r in response.get('Reservations', []):
+        # loop through all instances in each reservation
+        for i in r.get('Instances', []):
+            # extract tags into a dictionary (e.g., for getting the Name tag)
+            tags = {t['Key']: t['Value'] for t in i.get('Tags', [])}
+            # get the instance state (like 'running', 'stopped')
+            state = i.get('State', {}).get('Name', 'unknown')
+            # add instance details to the list under its state group
+            grouped[state].append({
+                'Name': tags.get('Name', 'N/A'),
+                'InstanceId': i.get('InstanceId', 'N/A'),
+                'InstanceType': i.get('InstanceType', 'N/A'),
+                'AZ': i.get('Placement', {}).get('AvailabilityZone', 'N/A'),
+                'PublicIp': i.get('PublicIpAddress', 'N/A'),
+                'PrivateIp': i.get('PrivateIpAddress', 'N/A')
+            })
+
+    # print the grouped data as formatted JSON
+    print(json.dumps(grouped, indent=2))
+    
+# ===== LAUNCH EC2 INSTANCE
+
+@click.command()
+@click.option("-r", "--region", required=True, help="AWS region where to launch ec2 instance too.")
+def launch(region):
+    # initialise ec2 client
+    ec2 = boto3.client("ec2", region_name=region)
+    
+# =============== ADD COMMANDS TO GROUP
+
+ec2.add_command(list_ec2)
+ec2.add_command(launch)
 
 if __name__ == "__main__":
    ec2()
