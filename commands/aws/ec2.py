@@ -6,7 +6,7 @@ and terminating instances, as well as managing AMIs, volumes, and tags through a
 user-friendly CLI interface.
 
 Usage:
-    dev-cli aws ec2 [COMMANDS]
+    dev-cli AWS EC2 [COMMANDS]
 
 Commands:
     launch         Launch a new EC2 instance with specified configuration.
@@ -17,19 +17,12 @@ Commands:
     reboot         Reboot an EC2 instance.
     terminate      Terminate an EC2 instance.
     tag            Add or modify tags on EC2 instances.
-
-    create-ami     Create an AMI from an existing EC2 instance.
-    list-amis      List AMIs owned by your AWS account.
-    del-ami        Deregister a specified AMI.
-
-    attach-volume  Attach an EBS volume to an EC2 instance.
-    detach-volume  Detach an EBS volume from an EC2 instance.
-    list-volumes   List EBS volumes in your account.
 """
 
 # import libraries
 import boto3.exceptions
 import boto3
+import botocore.exceptions
 import click
 import json
 from collections import defaultdict
@@ -67,62 +60,128 @@ def ec2(verbose, log_level):
       logger.debug("Verbose mode enabled.")
 
 # =============== CREATE COMMANDS
-# ===== LIST INSTANCES
+# ===== DESCRIBE INSTANCES
 
-@click.command()
-@click.option("-r", "--region", required=True, help="AWS region where the ec2 is located.")
-def list_ec2(region):
-    # initialise the ec2 client
+@click.command(help="Show detailed metadata of EC2 instances in a region.")
+@click.option("-r", "--region", help="AWS region.")
+@click.option("-s", "--state", help="Filter instances by state (e.g., running, stopped).")
+def describe(region, state):
+    # Initialise EC2 client
     ec2 = boto3.client("ec2", region_name=region)
+    
     try:
         response = ec2.describe_instances()
     except botocore.exceptions.BotoCoreError as e:
         logger.error(f"AWS Boto3 error: {e}")
+        return
     except Exception as e:
-        logger.error(f"Unexpected error: {e}")    
+        logger.error(f"Unexpected error: {e}")
         return
-    
-    # if no instances, print the message below then return
+
     if not response['Reservations']:
-        logger.info("No ec2 instances found in your AWS account")
+        logger.info("No EC2 instances found in your AWS account.")
         return
-    
-    # create a dictionary to group instances by their state (e.g. running, stopped)
+
     grouped = defaultdict(list)
 
-    # loop through all EC2 reservations
-    for r in response.get('Reservations', []):
-        # loop through all instances in each reservation
-        for i in r.get('Instances', []):
-            # extract tags into a dictionary (e.g., for getting the Name tag)
-            tags = {t['Key']: t['Value'] for t in i.get('Tags', [])}
-            # get the instance state (like 'running', 'stopped')
-            state = i.get('State', {}).get('Name', 'unknown')
-            # add instance details to the list under its state group
-            grouped[state].append({
+    # Loop through reservations and instances
+    for reservation in response.get('Reservations', []):
+        for instance in reservation.get('Instances', []):
+            inst_state = instance.get('State', {}).get('Name', 'unknown')
+            
+            # Filter by state if provided
+            if state and inst_state != state:
+                continue
+
+            tags = {t['Key']: t['Value'] for t in instance.get('Tags', [])}
+            grouped[inst_state].append({
                 'Name': tags.get('Name', 'N/A'),
-                'InstanceId': i.get('InstanceId', 'N/A'),
-                'InstanceType': i.get('InstanceType', 'N/A'),
-                'AZ': i.get('Placement', {}).get('AvailabilityZone', 'N/A'),
-                'PublicIp': i.get('PublicIpAddress', 'N/A'),
-                'PrivateIp': i.get('PrivateIpAddress', 'N/A')
+                'InstanceId': instance.get('InstanceId', 'N/A'),
+                'InstanceType': instance.get('InstanceType', 'N/A'),
+                'AZ': instance.get('Placement', {}).get('AvailabilityZone', 'N/A'),
+                'PublicIp': instance.get('PublicIpAddress', 'N/A'),
+                'PrivateIp': instance.get('PrivateIpAddress', 'N/A')
             })
 
-    # print the grouped data as formatted JSON
-    print(json.dumps(grouped, indent=2))
-    
+    # Sort instances in each state by Name
+    for state_group in grouped:
+        grouped[state_group] = sorted(grouped[state_group], key=lambda x: x['Name'])
+
+    if not any(grouped.values()):
+        logger.info(f"No EC2 instances found in state: {state}")
+        return
+
+    # Output result as pretty-printed JSON
+    print(json.dumps(grouped, indent=4))    
+
+# ===== TERMINATE EC2 INSTANCE
+
+@click.command(help="Terminate a specific EC2 instance by instance ID.")
+@click.option("-i", "--instance-id", required=True, help="ID of the EC2 instance to terminate.")
+@click.option("-r", "--region", required=True, help="AWS region where the EC2 instance is located.")
+@click.option("--yes", is_flag=True, help="Skip confirmation prompt before termination.")
+def terminate(instance_id, region, yes):
+    ec2 = boto3.client('ec2', region_name=region)
+
+    # Step 1: Check if the instance exists and retrieve its state
+    try:
+        response = ec2.describe_instances(InstanceIds=[instance_id])
+        instance = response['Reservations'][0]['Instances'][0]
+        current_state = instance['State']['Name']
+
+        # step 2: If the instance is already terminated, don't prompt for termination
+        if current_state == 'terminated':
+            logger.info(f"Instance {instance_id} is already terminated")
+            return
+
+        # step 3: Only prompt for termination if it's in a valid state (running, stopped, etc.)
+        if not yes:
+            confirm = input(f"Are you sure you want to terminate instance '{instance_id}'? Current state: {current_state} [y/N]: ")
+            if confirm.strip().lower() != 'y':
+                logger.info("Termination cancelled by user.")
+                return
+
+        # step 4: Proceed with termination
+        terminate_response = ec2.terminate_instances(InstanceIds=[instance_id])
+
+        instance_info = terminate_response["TerminatingInstances"][0]
+        state = instance_info["CurrentState"]["Name"]
+        previous_state = instance_info["PreviousState"]["Name"]
+
+        logger.info(f"Termination initiated for instance: {instance_id}. Current state: {state}")
+        
+        # step 5: Print the response as clean JSON
+        output = {
+            "InstanceId": instance_id,
+            "CurrentState": state,
+            "PreviousState": previous_state
+        }
+        print(json.dumps(output, indent=4))
+
+    # exception handling
+    except botocore.exceptions.ClientError as e:
+        logger.error(f"AWS ClientError: {e.response['Error']['Message']}")
+    except botocore.exceptions.BotoCoreError as e:
+        logger.error(f"BotoCoreError: {e}")
+    except Exception as e:
+        logger.error(f"Unexpected error: {e}")
+
 # ===== LAUNCH EC2 INSTANCE
 
-@click.command()
-@click.option("-r", "--region", required=True, help="AWS region where to launch ec2 instance too.")
+@click.command(help="Launche an EC2 instance in a specifed region.")
+@click.option("-a", "ami-id", required=True, help="AMI id to launch the EC2 instance with.")
+@click.option("-t", "--instance-type", default="t2.micro", show_default=True, help="Ec2 instance type to launch.")
+@click.option("-k", "--key-name", required=True, help="Name of the key pair to use.")
+@click.option("-r", "--region", default="eu-west-2", show_default=True, help="AWS region where to launch EC2 instance too.")
 def launch(region):
-    # initialise ec2 client
+    # initialise EC2 client
     ec2 = boto3.client("ec2", region_name=region)
     
 # =============== ADD COMMANDS TO GROUP
 
-ec2.add_command(list_ec2)
+ec2.add_command(describe)
 ec2.add_command(launch)
+ec2.add_command(terminate)
 
 if __name__ == "__main__":
    ec2()
