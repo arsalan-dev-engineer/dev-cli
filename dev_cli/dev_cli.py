@@ -9,7 +9,7 @@ import click
 import sys
 from pathlib import Path
 from commands.toolkit import cache
-from commands.automations import api_test
+from commands.automations import random_api
 
 # =============== PATH SETUP
 
@@ -59,7 +59,7 @@ docker.add_command(cleanup.cleanup)
 # toolkit
 toolkit.add_command(cache.cache)
 # automations
-automations.add_command(api_test.api_test)
+automations.add_command(random_api.random_api)
 
 # =============== ADD SUB-GROUPS TO MAIN CLI GROUP
 
