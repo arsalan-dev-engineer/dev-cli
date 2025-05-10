@@ -9,6 +9,7 @@ import click
 import sys
 from pathlib import Path
 from commands.toolkit import cache
+from commands.automations import api_test
 
 # =============== PATH SETUP
 
@@ -44,6 +45,10 @@ def docker():
 def toolkit():
     pass
 
+@click.group(help="Commands for automation stcipts.")
+def automations():
+    pass
+
 # =============== ADD COMMANDS TO SUB-GROUPS
 
 # aws
@@ -53,6 +58,8 @@ aws.add_command(ec2.ec2)
 docker.add_command(cleanup.cleanup)
 # toolkit
 toolkit.add_command(cache.cache)
+# automations
+automations.add_command(api_test.api_test)
 
 # =============== ADD SUB-GROUPS TO MAIN CLI GROUP
 
@@ -60,6 +67,7 @@ toolkit.add_command(cache.cache)
 cli.add_command(aws)
 cli.add_command(docker)
 cli.add_command(toolkit)
+cli.add_command(automations)
 
 # =============== SCRIPT ENTRYPOINT
 
