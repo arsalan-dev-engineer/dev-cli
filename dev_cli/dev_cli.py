@@ -10,6 +10,8 @@ import sys
 from pathlib import Path
 from commands.toolkit import cache
 from commands.automations import random_api
+from commands.automations.finhub import stocks
+
 
 # =============== PATH SETUP
 
@@ -45,21 +47,14 @@ def docker():
 def toolkit():
     pass
 
-@click.group(help="Commands for automation stcipts.")
+@click.group(help="Commands for automation scripts.")
 def automations():
     pass
 
-# =============== ADD COMMANDS TO SUB-GROUPS
-
-# aws
-aws.add_command(s3.s3)
-aws.add_command(ec2.ec2)
-# docker
-docker.add_command(cleanup.cleanup)
-# toolkit
-toolkit.add_command(cache.cache)
-# automations
-automations.add_command(random_api.random_api)
+# inside automations command
+@click.group(help="Commands for finance-related automation tasks.")
+def finhub():
+    pass
 
 # =============== ADD SUB-GROUPS TO MAIN CLI GROUP
 
@@ -68,6 +63,25 @@ cli.add_command(aws)
 cli.add_command(docker)
 cli.add_command(toolkit)
 cli.add_command(automations)
+automations.add_command(finhub)
+
+# =============== ADD COMMANDS TO SUB-GROUPS
+
+# commands/aws
+aws.add_command(s3.s3)
+aws.add_command(ec2.ec2)
+
+# commands/docker
+docker.add_command(cleanup.cleanup)
+
+# commands/toolkit
+toolkit.add_command(cache.cache)
+
+# commands/automations
+automations.add_command(random_api.random_api)
+
+# commands/automations/finhub
+finhub.add_command(stocks.stocks)
 
 # =============== SCRIPT ENTRYPOINT
 
