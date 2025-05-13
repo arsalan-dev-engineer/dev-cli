@@ -5,8 +5,8 @@ import os
 from pathlib import Path
 import logging
 
-https://pypi.org/project/yfinance/
-https://ranaroussi.github.io/yfinance/
+# https://pypi.org/project/yfinance/
+# https://ranaroussi.github.io/yfinance/
 # https://ranaroussi.github.io/yfinance/reference/index.html
 
 # =============== PATH
